@@ -1,0 +1,88 @@
+#include<stdio.h>
+#include<math.h>
+#include<stdlib.h>
+#include<time.h>
+#define random(n)  (rand() % (n))
+#define randomize() srand((unsigned)time(NULL))
+
+int mian()
+{
+	FILE *ip1, *op1, *op2, *op3, *op4, *op5;
+	float t, qpsk, fc, Ts, s[51], noise, dummy=0;
+	float mi, mq, mip, mqp, sit, sqt, ss[50];
+	int i, j;
+
+	Ts = 1./100.;
+	fc = 5;
+
+	op1 = fopen("mip.dat", "w");
+	op2 = fopen("mqp.dat", "w");
+	op3 = fopen("sit.dat", "w");
+	op4 = fopen("spt.dat", "w");
+	op5 = fopen("qpsk.dat", "w");
+	ip1 = fopen("gn.dat", "r");
+
+	for(j = 0; j <= 30; j++) s[j]=0.0;
+	for(j = 0; j <= 30; j++) ss[j]=0.0;
+
+	randomize();
+	mi = random(2);
+	
+	if(mi >= 1) mi = 1;
+	else mi = -1;
+	
+	mq = mi;
+
+	for(i=0; i <= 1999; i++)
+	{
+		t = i*Ts;
+		
+		if(i%50 != 0) dummy = dummy;
+		else
+		{
+			mi = random(2);
+			if(mi >= 1) mi = 1;
+			else mi = -1;
+
+			mq = random(2);
+			if(mq >= 1) mq = 1;
+			else mq = -1;
+		}
+
+	s[1] = mi;
+	mip = 0;
+	for(j=1; j<=20; j++) mip += s[j];
+	fscanf(ip1, "%f", &noise);
+	mip = mip/20. + noise*0.05;
+
+	ss[1] = mq;
+	mqp = 0;
+	for(j=1; j<=20; j++) mqp += ss[j];
+	fscanf(ip1, "%f", &noise);
+	mip = mip/20. + noise*0.05;
+
+	sit = mip* cos(2*3.14*fc*t);
+	sqt = mqp* sin(2*3.14*fc*t);
+
+	qpsk = sit + sqt;
+
+	fprintf(op1,"%f\n",mip);
+	fprintf(op2,"%f\n",mqp);
+	fprintf(op3,"%f\n",sit);
+	fprintf(op4,"%f\n",sqt);
+	fprintf(op5,"%f\n",qpsk);
+	
+	for(j=20; j>=2; j--) s[j] = s[j-1];
+	for(j=20; j>=2; j--) ss[j] = ss[j-1];
+
+	}
+
+	fclose(op1);
+	fclose(op2);
+	fclose(op3);
+	fclose(op4);
+	fclose(op5);
+	fclose(ip1);
+
+	return 0;
+}
